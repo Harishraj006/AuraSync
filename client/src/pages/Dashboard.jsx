@@ -4,6 +4,9 @@ import { Clock, Smile, Calendar, List, ChevronDown, ChevronUp, Save, CheckCircle
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import axios from 'axios';
 
+// Live Production Render Backend API Node
+const API_BASE_URL = "https://aurasync-backend-4o2n.onrender.com";
+
 const timeOrder = [
   "07:00 AM", "08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
   "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM",
@@ -123,19 +126,21 @@ export default function Dashboard({ user, onLogout }) {
     });
   };
 
+  // Live Render API Target Sync
   const fetchLeaderboardMetrics = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/analytics/leaderboard');
+      const response = await axios.get(`${API_BASE_URL}/api/analytics/leaderboard`);
       if (response.data) setLeaderboard(response.data);
     } catch (err) {
       console.error("Error reading leaderboard:", err);
     }
   };
 
+  // Live Render API Target Sync
   const handleAiReflect = async () => {
     setAiLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/ai/reflect', { slots });
+      const res = await axios.post(`${API_BASE_URL}/api/ai/reflect`, { slots });
       setAiSummary(res.data.reflection);
       showNotification("🤖 AI Sync Reflection analysis complete!");
     } catch (err) { console.error(err); }
@@ -154,9 +159,10 @@ export default function Dashboard({ user, onLogout }) {
     showNotification("📥 CSV Report downloaded successfully!");
   };
 
+  // Live Render API Target Sync
   const fetchTodayLogs = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/logs/today', { userId: user.id });
+      const response = await axios.post(`${API_BASE_URL}/api/logs/today`, { userId: user.id });
       if (response.data.success) {
         setLogId(response.data.log.id);
         setHappyMoment(response.data.log.happy_moment || '');
@@ -167,23 +173,25 @@ export default function Dashboard({ user, onLogout }) {
     } catch (err) { console.error(err); }
   };
 
+  // Live Render API Target Sync
   const handleUpdateSlot = async (slotId, activity, category) => {
     setSaveStatus(prev => ({ ...prev, [slotId]: 'saving' }));
-    const response = await axios.post('http://localhost:5000/api/logs/update-slot', { slotId, activity, category });
+    const response = await axios.post(`${API_BASE_URL}/api/logs/update-slot`, { slotId, activity, category });
     if (response.data.success) {
       setSaveStatus(prev => ({ ...prev, [slotId]: 'saved' }));
       setTimeout(() => setSaveStatus(prev => ({ ...prev, [slotId]: null })), 2000);
-      axios.get(`http://localhost:5000/api/logs/history/${user.id}`).then(res => setHistory(res.data));
+      axios.get(`${API_BASE_URL}/api/logs/history/${user.id}`).then(res => setHistory(res.data));
       fetchLeaderboardMetrics(); 
     }
   };
 
+  // Live Render API Target Sync
   const handleUpdateIncident = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/logs/update-incident', { logId, happyMoment });
+      const response = await axios.post(`${API_BASE_URL}/api/logs/update-incident`, { logId, happyMoment });
       if (response.data.success) {
         showNotification("✨ Happy incident logged securely into Supabase!");
-        axios.get(`http://localhost:5000/api/logs/history/${user.id}`).then(res => setHistory(res.data));
+        axios.get(`${API_BASE_URL}/api/logs/history/${user.id}`).then(res => setHistory(res.data));
       }
     } catch (err) { showNotification("Failed to log happy moment.", "error"); }
   };
@@ -191,16 +199,17 @@ export default function Dashboard({ user, onLogout }) {
   useEffect(() => { 
     if (user?.id) { 
       fetchTodayLogs(); 
-      axios.get(`http://localhost:5000/api/profile/${user.id}`).then(res => { if (res.data) setProfile(res.data); }); 
-      axios.get(`http://localhost:5000/api/logs/history/${user.id}`).then(res => { if (res.data) setHistory(res.data); });
+      axios.get(`${API_BASE_URL}/api/profile/${user.id}`).then(res => { if (res.data) setProfile(res.data); }); 
+      axios.get(`${API_BASE_URL}/api/logs/history/${user.id}`).then(res => { if (res.data) setHistory(res.data); });
       fetchLeaderboardMetrics();
     } 
   }, [user]);
 
+  // Live Render API Target Sync
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/profile/update', { id: user.id, ...profile });
+      const response = await axios.post(`${API_BASE_URL}/api/profile/update`, { id: user.id, ...profile });
       if (response.data.success) { 
         setShowProfile(false); 
         showNotification("✨ Profile updated inside Supabase safely!");
