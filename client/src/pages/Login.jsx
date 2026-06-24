@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, UserPlus, Chrome } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus } from 'lucide-react';
 import axios from 'axios';
 
 // Live Production Render Backend API Node Link
@@ -11,11 +11,13 @@ export default function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) return;
     setLoading(true);
+    setError('');
 
     const endpoint = isSignUp ? '/api/auth/signup' : '/api/auth/login';
     try {
@@ -23,22 +25,28 @@ export default function Login({ onLoginSuccess }) {
         email: email.trim(), 
         password 
       });
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         // Logged in successfully, pass user data up
         onLoginSuccess(response.data.user || response.data.session?.user);
+      } else {
+        setError("Authentication credentials matrix mismatched.");
       }
-    } catch (error) {
-      console.error("Auth Error Layer:", error);
-      alert(error.response?.data?.error || "Authentication matrix failed!");
+    } catch (err) {
+      console.error("Auth Error Layer Crash:", err);
+      setError(err.response?.data?.error || "Authentication network node validation failed!");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🌟 GOOGLE AUTHENTICATION INTEGRATION ROUTER REDIRECTION
+  // 🌟 GOOGLE OAuth STANDALONE RE-ROUTING NODE WITH RAW SVG (MAPPED TO YOUR REAL ID: 4o2n)
+  // 🌟 GOOGLE OAuth STANDALONE RE-ROUTING NODE WITH YOUR ACTUAL URL
   const handleGoogleLogin = () => {
-    // Supabase native direct cloud OAuth url redirection node
-    window.location.href = `https://your-supabase-project-id.supabase.co/auth/v1/authorize?provider=google&redirect_to=${window.location.origin}`;
+    // கீழே இருக்கிற லிங்க்ல 'உங்க-உண்மையான-supabase-url' இருக்குற இடத்துல .env-ல காப்பி பண்ண லிங்க்கை போடுங்க boss
+    // Use Vite env var `VITE_SUPABASE_URL` when available, fallback to known project ref
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ycbufimsypopisgcwmzu.supabase.co';
+    const redirectTo = encodeURIComponent(window.location.origin);
+    window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectTo}`;
   };
 
   return (
@@ -51,13 +59,19 @@ export default function Login({ onLoginSuccess }) {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold tracking-tight mb-2">
+          <h2 className="text-3xl font-bold tracking-tight mb-2 text-white">
             {isSignUp ? "Create Account" : "Welcome Back"}
           </h2>
           <p className="text-neutral-400 text-sm">
             {isSignUp ? "Sign up to track your hour-to-hour aura" : "Login to manage your daily timeline logs"}
           </p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold rounded-xl text-center uppercase tracking-wide">
+            ⚠️ {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
@@ -105,23 +119,31 @@ export default function Login({ onLoginSuccess }) {
           </button>
         </form>
 
-        {/* 🌟 GOOGLE OAuth SPLITTER GRID ELEMENT */}
+        {/* GOOGLE OAuth SPLITTER ELEMENT */}
         <div className="relative flex py-4 items-center">
           <div className="flex-grow border-t border-neutral-800"></div>
           <span className="flex-shrink mx-4 text-neutral-500 font-bold text-[9px] uppercase tracking-widest">OR</span>
           <div className="flex-grow border-t border-neutral-800"></div>
         </div>
 
-        {/* 🌟 PREMIUM NEOMORPHIC GOOGLE SIGN-IN WIDGET BUTTON */}
+        {/* ULTRA STABLE RAW SVG GOOGLE WIDGET BUTTON */}
         <button 
+          type="button"
           onClick={handleGoogleLogin}
           className="w-full py-3.5 flex items-center justify-center gap-2 bg-neutral-950/60 hover:bg-neutral-950 border border-neutral-800 hover:border-neutral-700 text-neutral-300 font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-sm"
         >
-          <Chrome className="w-4 h-4 text-red-400 animate-spin-slow" /> Continue with Google
+          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+            <path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.96 1 12 1 7.35 1 3.37 3.65 1.4 7.56l3.77 2.92C6.11 7.42 8.84 5.04 12 5.04z"/>
+            <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.42 3.62l3.77 2.92c2.2-2.03 3.48-5.02 3.48-8.69z"/>
+            <path fill="#FBBC05" d="M5.17 14.52c-.23-.69-.37-1.43-.37-2.2 0-.77.13-1.51.37-2.2L1.4 7.2C.51 8.93 0 10.89 0 12s.51 3.07 1.4 4.8l3.77-2.28z"/>
+            <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.77-2.92c-1.1.74-2.52 1.19-4.19 1.19-3.16 0-5.89-2.38-6.83-5.44L1.4 15.83C3.37 19.74 7.35 23 12 23z"/>
+          </svg>
+          Continue with Google
         </button>
 
         <div className="text-center mt-6">
           <button 
+            type="button"
             onClick={() => setIsSignUp(!isSignUp)}
             className="text-sm text-neutral-400 hover:text-white underline underline-offset-4 decoration-neutral-800 transition-colors"
           >
