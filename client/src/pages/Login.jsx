@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, UserPlus } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus, Chrome } from 'lucide-react';
 import axios from 'axios';
+
+// Live Production Render Backend API Node Link
+const API_BASE_URL = "https://aurasync-backend-4o2n.onrender.com";
 
 export default function Login({ onLoginSuccess }) {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -16,17 +19,26 @@ export default function Login({ onLoginSuccess }) {
 
     const endpoint = isSignUp ? '/api/auth/signup' : '/api/auth/login';
     try {
-      const response = await axios.post(`http://localhost:5000${endpoint}`, { email, password });
+      const response = await axios.post(`${API_BASE_URL}${endpoint}`, { 
+        email: email.trim(), 
+        password 
+      });
       if (response.data.success) {
         // Logged in successfully, pass user data up
-        onLoginSuccess(response.data.user || response.data.session.user);
+        onLoginSuccess(response.data.user || response.data.session?.user);
       }
     } catch (error) {
-      console.error("Auth Error:", error);
-      alert(error.response?.data?.error || "Authentication failed!");
+      console.error("Auth Error Layer:", error);
+      alert(error.response?.data?.error || "Authentication matrix failed!");
     } finally {
       setLoading(false);
     }
+  };
+
+  // 🌟 GOOGLE AUTHENTICATION INTEGRATION ROUTER REDIRECTION
+  const handleGoogleLogin = () => {
+    // Supabase native direct cloud OAuth url redirection node
+    window.location.href = `https://your-supabase-project-id.supabase.co/auth/v1/authorize?provider=google&redirect_to=${window.location.origin}`;
   };
 
   return (
@@ -56,7 +68,7 @@ export default function Login({ onLoginSuccess }) {
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="harishraj@example.com"
+                placeholder="Enter your email address..."
                 className="w-full bg-neutral-950 border border-neutral-800 rounded-xl py-3 pl-12 pr-4 text-neutral-200 placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                 required
               />
@@ -71,7 +83,7 @@ export default function Login({ onLoginSuccess }) {
                 type="password" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Enter your secure password..."
                 className="w-full bg-neutral-950 border border-neutral-800 rounded-xl py-3 pl-12 pr-4 text-neutral-200 placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                 required
               />
@@ -92,6 +104,21 @@ export default function Login({ onLoginSuccess }) {
             )}
           </button>
         </form>
+
+        {/* 🌟 GOOGLE OAuth SPLITTER GRID ELEMENT */}
+        <div className="relative flex py-4 items-center">
+          <div className="flex-grow border-t border-neutral-800"></div>
+          <span className="flex-shrink mx-4 text-neutral-500 font-bold text-[9px] uppercase tracking-widest">OR</span>
+          <div className="flex-grow border-t border-neutral-800"></div>
+        </div>
+
+        {/* 🌟 PREMIUM NEOMORPHIC GOOGLE SIGN-IN WIDGET BUTTON */}
+        <button 
+          onClick={handleGoogleLogin}
+          className="w-full py-3.5 flex items-center justify-center gap-2 bg-neutral-950/60 hover:bg-neutral-950 border border-neutral-800 hover:border-neutral-700 text-neutral-300 font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-sm"
+        >
+          <Chrome className="w-4 h-4 text-red-400 animate-spin-slow" /> Continue with Google
+        </button>
 
         <div className="text-center mt-6">
           <button 
