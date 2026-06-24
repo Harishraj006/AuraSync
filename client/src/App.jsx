@@ -6,12 +6,34 @@ export default function App() {
   const [user, setUser] = useState(null);
 
   // Auto-login session recovery across browser refreshes
-  useEffect(() => {
-    const savedUser = localStorage.getItem('aurasync_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+  // client/src/App.jsx - ஓபன் பண்ணி உங்க மத்த useEffect-க்கு உள்ளே அல்லது பக்கத்துல போடுங்க
+useEffect(() => {
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token=')) {
+    const params = new URLSearchParams(hash.replace('#', '?'));
+    const accessToken = params.get('access_token');
+    const tokenType = params.get('token_type');
+
+    if (accessToken) {
+      // 🌟 டைரெக்டா சுபாபேஸ்ல இருந்து யூசர் டேட்டாவை எடுத்து லாகின் சக்சஸ் பண்றோம்!
+      fetch('https://ycbufimsypopisgcwmzu.supabase.co/auth/v1/user', {
+        headers: {
+          'Authorization': `${tokenType} ${accessToken}`,
+          'apiKey': 'YOUR_SUPABASE_ANON_KEY' 
+        }
+      })
+      .then(res => res.json())
+      .then(userData => {
+        if (userData && userData.email) {
+          // 🚀 லாகின் பேஜ்ஜை பைபாஸ் பண்ணி நேரடியா மெயின் ஸ்டேட்டை அப்டேட் பண்ணிடுறோம்!
+          setUser(userData); // உங்க ஆப்ல லாகின் சக்சஸ் ஆனா என்ன ஸ்டேட் மாறுமோ (e.g., setUser) அதை இங்க போடுங்க boss
+          window.location.hash = ''; // URL-ஐ கிளீன் பண்ணிடுறோம்
+        }
+      })
+      .catch(err => console.error("Google Sync Core Crash:", err));
     }
-  }, []);
+  }
+}, []);
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
