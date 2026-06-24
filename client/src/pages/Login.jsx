@@ -14,28 +14,26 @@ export default function Login({ onLoginSuccess }) {
   const [error, setError] = useState('');
 
   // 🌟 GOOGLE AUTH AUTOLOGIN SESSION TRACKER MATRIX
+ // 🌟 GOOGLE AUTH AUTOLOGIN SESSION TRACKER MATRIX
   useEffect(() => {
-    // URL-ல கூகுள் லாகின் முடிஞ்சு வர்ற செஷன் டோக்கன் (access_token) இருக்கான்னு செக் பண்ணுது
     const hash = window.location.hash;
     if (hash && hash.includes('access_token=')) {
-      // பராமீட்டர்ஸ் எல்லாத்தையும் பிரிச்சு எடுக்குறோம் boss
+      setLoading(true);
+      setError(''); // ⚠️ பழைய எரர்ஸ் எல்லாத்தையும் க்ளீன் பண்றோம் boss!
+      
       const params = new URLSearchParams(hash.replace('#', '?'));
       const accessToken = params.get('access_token');
       const tokenType = params.get('token_type');
 
       if (accessToken) {
-        setLoading(true);
-        // சுபாபேஸ் குடுத்த டோக்கனை வச்சு யூசர் ப்ரொஃபைல் டேட்டாவை எடுக்க கூகுள் API-க்கு ஹிட் பண்றோம்
         fetch('https://ycbufimsypopisgcwmzu.supabase.co/auth/v1/user', {
           headers: {
-            'Authorization': `${tokenType} ${accessToken}`,
-            'apiKey': 'YOUR_SUPABASE_ANON_KEY' // உங்க அனான் கீ இங்க இல்லனாலும் ஒர்க் ஆகும், பிகாஸ் செஷன் லைவ்-ஆ இருக்கு
+            'Authorization': `${tokenType} ${accessToken}`
           }
         })
         .then(res => res.json())
         .then(userData => {
           if (userData && userData.email) {
-            // பாஸ்வேர்ட் இல்லாம நேரடியா டேஷ்போர்டுக்குள்ள அனுப்புறோம் boss! மாஸ்!
             onLoginSuccess(userData);
           }
         })
