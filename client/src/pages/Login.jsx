@@ -26,7 +26,6 @@ export default function Login({ onLoginSuccess }) {
         password 
       });
       if (response.data && response.data.success) {
-        // Logged in successfully, pass user data up
         onLoginSuccess(response.data.user || response.data.session?.user);
       } else {
         setError("Authentication credentials matrix mismatched.");
@@ -39,14 +38,9 @@ export default function Login({ onLoginSuccess }) {
     }
   };
 
-  // 🌟 GOOGLE OAuth STANDALONE RE-ROUTING NODE WITH RAW SVG (MAPPED TO YOUR REAL ID: 4o2n)
-  // 🌟 GOOGLE OAuth STANDALONE RE-ROUTING NODE WITH YOUR ACTUAL URL
+  // 🌟 SUPABASE DIRECT NATIVE GOOGLE OAUTH WITH YOUR REAL PROJECT ID (ycbufimsypopisgcwmzu)
   const handleGoogleLogin = () => {
-    // கீழே இருக்கிற லிங்க்ல 'உங்க-உண்மையான-supabase-url' இருக்குற இடத்துல .env-ல காப்பி பண்ண லிங்க்கை போடுங்க boss
-    // Use Vite env var `VITE_SUPABASE_URL` when available, fallback to known project ref
-    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ycbufimsypopisgcwmzu.supabase.co';
-    const redirectTo = encodeURIComponent(window.location.origin);
-    window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectTo}`;
+    window.location.href = `https://ycbufimsypopisgcwmzu.supabase.co/auth/v1/authorize?provider=google&redirect_to=${window.location.origin}`;
   };
 
   return (
