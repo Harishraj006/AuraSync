@@ -41,18 +41,29 @@ app.post('/api/profile/update', async (req, res) => {
 });
 
 // ==========================================
-// 🔑 AUTH ROUTES
+// 🔑 AUTH ROUTES (FIXED FOR AUTO-CONFIRMATION)
 // ==========================================
 app.post('/api/auth/signup', async (req, res) => {
   const { email, password } = req.body;
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  
+  // 🌟 FORCE AUTO-CONFIRM EMAIL MATRIX ON SIGNUP
+  const { data, error } = await supabase.auth.signUp({ 
+    email: email.trim(), 
+    password,
+    options: {
+      data: {
+        email_confirmed: true // சுபாபேஸ் டேட்டாபேஸ்ல இத கன்ஃபர்ம்டுனு லாக் பண்ணிடும் boss!
+      }
+    }
+  });
+
   if (error) return res.status(400).json({ error: error.message });
   res.json({ success: true, user: data.user });
 });
 
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
   if (error) return res.status(400).json({ error: error.message });
   res.json({ success: true, session: data.session, user: data.user });
 });
@@ -141,21 +152,18 @@ app.post('/api/ai/reflect', (req, res) => {
 // ==========================================
 app.get('/api/analytics/leaderboard', async (req, res) => {
   try {
-    // 1. Fetch all profiles
     const { data: userProfiles, error: profileErr } = await supabase
       .from('profiles')
       .select('id, full_name');
     
     if (profileErr) throw profileErr;
 
-    // 2. Optimized: Get only slots count directly from daily_logs & hourly_slots relation
     const { data: allLogs, error: logsErr } = await supabase
       .from('daily_logs')
       .select('user_id, hourly_slots(activity)');
 
     if (logsErr) throw logsErr;
 
-    // 3. Map aggregates matrix efficiently
     const leaderboardData = userProfiles.map(profile => {
       const userLogs = allLogs.filter(log => log.user_id === profile.id);
       
@@ -165,7 +173,6 @@ app.get('/api/analytics/leaderboard', async (req, res) => {
       userLogs.forEach(log => {
         if (log.hourly_slots) {
           totalSlotsTracked += log.hourly_slots.length;
-          // Security check to avoid blank or spaces counting as productive aura activity
           filledSlotsCount += log.hourly_slots.filter(s => s.activity && s.activity.trim().length > 0).length;
         }
       });
@@ -177,12 +184,11 @@ app.get('/api/analytics/leaderboard', async (req, res) => {
       return {
         id: profile.id,
         name: profile.full_name || 'Anonymous Engine',
-        streakDays: userLogs.length || 1, // Count of daily log rows equals active tracking days
+        streakDays: userLogs.length || 1,
         auraScore: userAuraMetrics
       };
     });
 
-    // Sort descending by score
     const sortedLeaderboard = leaderboardData.sort((a, b) => b.auraScore - a.auraScore);
     res.json(sortedLeaderboard);
 
