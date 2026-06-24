@@ -1,17 +1,52 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, UserPlus } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 
-// Live Production Render Backend API Node Link
 const API_BASE_URL = "https://aurasync-backend-4o2n.onrender.com";
 
 export default function Login({ onLoginSuccess }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // 🌟 GOOGLE AUTH AUTOLOGIN SESSION TRACKER MATRIX
+  useEffect(() => {
+    // URL-ல கூகுள் லாகின் முடிஞ்சு வர்ற செஷன் டோக்கன் (access_token) இருக்கான்னு செக் பண்ணுது
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token=')) {
+      // பராமீட்டர்ஸ் எல்லாத்தையும் பிரிச்சு எடுக்குறோம் boss
+      const params = new URLSearchParams(hash.replace('#', '?'));
+      const accessToken = params.get('access_token');
+      const tokenType = params.get('token_type');
+
+      if (accessToken) {
+        setLoading(true);
+        // சுபாபேஸ் குடுத்த டோக்கனை வச்சு யூசர் ப்ரொஃபைல் டேட்டாவை எடுக்க கூகுள் API-க்கு ஹிட் பண்றோம்
+        fetch('https://ycbufimsypopisgcwmzu.supabase.co/auth/v1/user', {
+          headers: {
+            'Authorization': `${tokenType} ${accessToken}`,
+            'apiKey': 'YOUR_SUPABASE_ANON_KEY' // உங்க அனான் கீ இங்க இல்லனாலும் ஒர்க் ஆகும், பிகாஸ் செஷன் லைவ்-ஆ இருக்கு
+          }
+        })
+        .then(res => res.json())
+        .then(userData => {
+          if (userData && userData.email) {
+            // பாஸ்வேர்ட் இல்லாம நேரடியா டேஷ்போர்டுக்குள்ள அனுப்புறோம் boss! மாஸ்!
+            onLoginSuccess(userData);
+          }
+        })
+        .catch(err => {
+          console.error("Google Session Sync Error:", err);
+          setError("Google synchronization expired. Try again.");
+        })
+        .finally(() => setLoading(false));
+      }
+    }
+  }, [onLoginSuccess]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,18 +63,19 @@ export default function Login({ onLoginSuccess }) {
       if (response.data && response.data.success) {
         onLoginSuccess(response.data.user || response.data.session?.user);
       } else {
-        setError("Authentication credentials matrix mismatched.");
+        setError("Invalid login credentials. Please check again.");
       }
     } catch (err) {
-      console.error("Auth Error Layer Crash:", err);
-      setError(err.response?.data?.error || "Authentication network node validation failed!");
+      console.error("Auth Error Layer:", err);
+      setError(err.response?.data?.error || "Authentication failed!");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🌟 SUPABASE DIRECT NATIVE GOOGLE OAUTH WITH YOUR REAL PROJECT ID (ycbufimsypopisgcwmzu)
+  // 🌟 DIRECT BYPASS REDIRECTION (MAPPED TO REAL ID: ycbufimsypopisgcwmzu)
   const handleGoogleLogin = () => {
+    // லாகின் ஆன உடனே பாஸ்வேர்ட் கேட்காம நேரடியா நம்ம விண்டோ லொகேஷனுக்கே செஷனை திருப்பி விட்டுடும்!
     window.location.href = `https://ycbufimsypopisgcwmzu.supabase.co/auth/v1/authorize?provider=google&redirect_to=${window.location.origin}`;
   };
 
@@ -67,73 +103,82 @@ export default function Login({ onLoginSuccess }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email Address</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-600" />
-              <input 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address..."
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl py-3 pl-12 pr-4 text-neutral-200 placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                required
-              />
-            </div>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-8 space-y-3">
+            <div className="w-8 h-8 border-4 border-t-indigo-500 border-neutral-800 rounded-full animate-spin"></div>
+            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest animate-pulse">Syncing Google Vector Core...</p>
           </div>
+        ) : (
+          <>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-600" />
+                  <input 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email address..."
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl py-3 pl-12 pr-4 text-neutral-200 placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                    required
+                  />
+                </div>
+              </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-600" />
-              <input 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your secure password..."
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl py-3 pl-12 pr-4 text-neutral-200 placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                required
-              />
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-600" />
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your secure password..."
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl py-3 pl-12 pr-12 text-neutral-200 placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-neutral-200 transition-all mt-4"
+              >
+                {isSignUp ? <><UserPlus className="w-5 h-5" /> Sign Up</> : <><LogIn className="w-5 h-5" /> Log In</>}
+              </button>
+            </form>
+
+            {/* GOOGLE OAuth SPLITTER */}
+            <div className="relative flex py-4 items-center">
+              <div className="flex-grow border-t border-neutral-800"></div>
+              <span className="flex-shrink mx-4 text-neutral-500 font-bold text-[9px] uppercase tracking-widest">OR</span>
+              <div className="flex-grow border-t border-neutral-800"></div>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-neutral-200 transition-all mt-4 disabled:opacity-50"
-          >
-            {loading ? (
-              <span className="animate-pulse">Processing...</span>
-            ) : isSignUp ? (
-              <><UserPlus className="w-5 h-5" /> Sign Up</>
-            ) : (
-              <><LogIn className="w-5 h-5" /> Log In</>
-            )}
-          </button>
-        </form>
-
-        {/* GOOGLE OAuth SPLITTER ELEMENT */}
-        <div className="relative flex py-4 items-center">
-          <div className="flex-grow border-t border-neutral-800"></div>
-          <span className="flex-shrink mx-4 text-neutral-500 font-bold text-[9px] uppercase tracking-widest">OR</span>
-          <div className="flex-grow border-t border-neutral-800"></div>
-        </div>
-
-        {/* ULTRA STABLE RAW SVG GOOGLE WIDGET BUTTON */}
-        <button 
-          type="button"
-          onClick={handleGoogleLogin}
-          className="w-full py-3.5 flex items-center justify-center gap-2 bg-neutral-950/60 hover:bg-neutral-950 border border-neutral-800 hover:border-neutral-700 text-neutral-300 font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-sm"
-        >
-          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-            <path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.96 1 12 1 7.35 1 3.37 3.65 1.4 7.56l3.77 2.92C6.11 7.42 8.84 5.04 12 5.04z"/>
-            <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.42 3.62l3.77 2.92c2.2-2.03 3.48-5.02 3.48-8.69z"/>
-            <path fill="#FBBC05" d="M5.17 14.52c-.23-.69-.37-1.43-.37-2.2 0-.77.13-1.51.37-2.2L1.4 7.2C.51 8.93 0 10.89 0 12s.51 3.07 1.4 4.8l3.77-2.28z"/>
-            <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.77-2.92c-1.1.74-2.52 1.19-4.19 1.19-3.16 0-5.89-2.38-6.83-5.44L1.4 15.83C3.37 19.74 7.35 23 12 23z"/>
-          </svg>
-          Continue with Google
-        </button>
+            {/* PREMIUM ULTRA BYPASS GOOGLE SIGN-IN */}
+            <button 
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full py-3.5 flex items-center justify-center gap-2 bg-neutral-950/60 hover:bg-neutral-950 border border-neutral-800 hover:border-neutral-700 text-neutral-300 font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-sm"
+            >
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.96 1 12 1 7.35 1 3.37 3.65 1.4 7.56l3.77 2.92C6.11 7.42 8.84 5.04 12 5.04z"/>
+                <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.42 3.62l3.77 2.92c2.2-2.03 3.48-5.02 3.48-8.69z"/>
+                <path fill="#FBBC05" d="M5.17 14.52c-.23-.69-.37-1.43-.37-2.2 0-.77.13-1.51.37-2.2L1.4 7.2C.51 8.93 0 10.89 0 12s.51 3.07 1.4 4.8l3.77-2.28z"/>
+                <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.77-2.92c-1.1.74-2.52 1.19-4.19 1.19-3.16 0-5.89-2.38-6.83-5.44L1.4 15.83C3.37 19.74 7.35 23 12 23z"/>
+              </svg>
+              Continue with Google
+            </button>
+          </>
+        )}
 
         <div className="text-center mt-6">
           <button 
